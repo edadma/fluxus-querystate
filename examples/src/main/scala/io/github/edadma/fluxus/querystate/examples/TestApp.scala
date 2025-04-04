@@ -24,13 +24,6 @@ def App: FluxusNode = {
   // Use query parameters in component
   val (activeTab, setActiveTab, _) = useQueryParam("tab", "home")
 
-  // Determine which tab content to show
-  val tabContent = activeTab match {
-    case "products" => ProductsTab <> ()
-    case "about"    => AboutTab <> ()
-    case _          => HomeTab <> ()
-  }
-
   div(
     cls := "container mx-auto p-4",
 
@@ -70,7 +63,11 @@ def App: FluxusNode = {
     // Tab content
     div(
       cls := "border p-4 rounded",
-      tabContent,
+      activeTab match {
+        case "products" => ProductsTab <> ()
+        case "about"    => AboutTab <> ()
+        case _          => HomeTab <> ()
+      },
     ),
 
     // Reset button
