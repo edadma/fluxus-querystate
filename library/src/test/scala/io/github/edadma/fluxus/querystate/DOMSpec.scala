@@ -1,4 +1,4 @@
-package io.github.edadma.fluxus_library_template
+package io.github.edadma.fluxus.querystate
 
 import io.github.edadma.logger.{FileHandler, LogLevel}
 import io.github.edadma.fluxus.logger
