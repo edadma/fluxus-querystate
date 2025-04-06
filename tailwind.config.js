@@ -1,19 +1,46 @@
 module.exports = {
-  // Specify the paths to all of your template files
+  // Content sources - use glob patterns for better file matching
   content: [
-    './examples/target/scala-3.6.4/examples-fastopt/**/*.js', // Your Scala.js source files
-    './index.html',         // Your HTML files
+    './examples/**/*.{scala,js,html}',
+    './index.html',
   ],
-  daisyui: {
-      themes: ["light", "dark", "night", "cupcake"],
-  },
-  // Extend the default Tailwind CSS configuration
+
+  // Tailwind v4 recommends using the new `content` configuration
+  // which replaces the older content detection method
+
+  // Theme customization
   theme: {
     extend: {
+      // Add custom theme extensions if needed
       fontFamily: {
+        // Example of custom font family
+        // 'custom': ['YourCustomFont', 'sans-serif']
+      },
+      colors: {
+        // Add custom color definitions if required
       }
-    },
+    }
   },
-  // Add DaisyUI as a plugin
-  plugins: [require("@tailwindcss/typography"), require('daisyui')],
-};
+
+  // Plugins
+  plugins: [
+    require('@tailwindcss/typography'),
+    require('daisyui')
+  ],
+
+  // DaisyUI themes (if using)
+  daisyui: {
+    themes: ["light", "dark", "night", "cupcake"],
+  },
+
+  // New in v4: Optional performance and output configurations
+  performance: {
+    // Optimize for speed or size
+    preset: 'default'
+  },
+
+  // Experimental features (optional)
+  experimental: {
+    optimizeUniversalDefaults: true
+  }
+}
