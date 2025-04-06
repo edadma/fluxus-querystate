@@ -17,8 +17,8 @@ ThisBuild / sonatypeProfileName := "io.github.edadma"
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
-    url("https://github.com/edadma/fluxus"),
-    "scm:git@github.com:edadma/fluxus.git",
+    url("https://github.com/edadma/fluxus-querystate"),
+    "scm:git@github.com:edadma/fluxus-querystate.git",
   ),
 )
 ThisBuild / developers := List(
@@ -30,7 +30,7 @@ ThisBuild / developers := List(
   ),
 )
 
-ThisBuild / homepage := Some(url("https://github.com/edadma/fluxus"))
+ThisBuild / homepage := Some(url("https://github.com/edadma/fluxus-querystate"))
 
 ThisBuild / pomIncludeRepository := { _ => false }
 ThisBuild / publishTo := {
@@ -56,8 +56,8 @@ lazy val library = project
   .enablePlugins(ScalaJSPlugin)
   .settings(commonSettings)
   .settings(
-    name        := "fluxus-library-template",
-    description := "A template for fluxus libraries",
+    name := "fluxus-querystate",
+    description := "A lightweight library for synchronizing Fluxus application state with URL query parameters, enabling shareable URLs and browser history integration",
     libraryDependencies ++= Seq(
       "org.scalatest"    %%% "scalatest" % "3.2.19" % "test",
       "com.lihaoyi"      %%% "pprint"    % "0.9.0"  % "test",
@@ -88,7 +88,7 @@ lazy val examples = project
     publishLocal / skip             := true,
   )
 
-lazy val fluxus_library_template = project
+lazy val fluxus_querystate = project
   .in(file("."))
   .aggregate(library, examples)
   .settings(
