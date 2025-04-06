@@ -16,11 +16,11 @@ import org.scalajs.dom
   )
 
   // Render app to DOM
-  render(App, "app")
+  render(TestApp, "app")
 }
 
 // Main App component
-def App: FluxusNode = {
+def TestApp: FluxusNode = {
   // Use query parameters in component
   val (activeTab, setActiveTab, _) = useQueryParam("tab", "home")
 
