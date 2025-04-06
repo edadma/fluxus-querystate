@@ -30,7 +30,7 @@ def TestApp: FluxusNode = {
     // Header
     div(
       cls := "bg-blue-600 text-white p-4 mb-4 rounded",
-      h1(cls := "text-2xl font-bold", "FluxusQueryState Demo"),
+      h1(cls := "text-2xl font-bold", "QueryState Demo"),
     ),
 
     // Navigation tabs
@@ -91,7 +91,7 @@ def TestApp: FluxusNode = {
 // Home tab content
 def HomeTab = () => {
   div(
-    h2(cls := "text-xl font-bold mb-4", "Welcome to FluxusQueryState Demo"),
+    h2(cls := "text-xl font-bold mb-4", "Welcome to QueryState Demo"),
     p(
       "This demo shows how to synchronize application state with URL query parameters.",
       br(),
@@ -202,8 +202,8 @@ def ProductsTab = () => {
 // About tab content
 def AboutTab = () => {
   div(
-    h2(cls := "text-xl font-bold mb-4", "About FluxusQueryState"),
-    p(cls  := "mb-4", "FluxusQueryState is a lightweight library for Fluxus applications that:"),
+    h2(cls := "text-xl font-bold mb-4", "About QueryState"),
+    p(cls  := "mb-4", "QueryState is a lightweight library for Fluxus applications that:"),
     ul(
       cls := "list-disc pl-5 mb-4",
       li("Synchronizes application state with URL query parameters"),
@@ -218,7 +218,7 @@ def AboutTab = () => {
       pre(
         code(
           "// Initialize with defaults\n" +
-            "FluxusQueryState.init(\n" +
+            "QueryState.init(\n" +
             "  defaults = Map(\n" +
             "    \"tab\" -> \"home\",\n" +
             "    \"filter\" -> \"\"\n" +
