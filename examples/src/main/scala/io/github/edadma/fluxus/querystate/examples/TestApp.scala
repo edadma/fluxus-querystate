@@ -1,13 +1,13 @@
 package io.github.edadma.fluxus.querystate.examples
 
 import io.github.edadma.fluxus._
-import io.github.edadma.fluxus.querystate.FluxusQueryState
+import io.github.edadma.fluxus.querystate.QueryState
 import io.github.edadma.fluxus.querystate.useQueryParam
 import org.scalajs.dom
 
 @main def run(): Unit = {
   // Initialize with default values
-  FluxusQueryState.init(
+  QueryState.init(
     defaults = Map(
       "tab"    -> "home",
       "filter" -> "",
@@ -75,7 +75,7 @@ def App: FluxusNode = {
       cls := "mt-4",
       button(
         cls     := "bg-red-500 text-white px-4 py-2 rounded",
-        onClick := (() => FluxusQueryState.reset()),
+        onClick := (() => QueryState.reset()),
         "Reset URL State",
       ),
     ),

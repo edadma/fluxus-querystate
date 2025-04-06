@@ -10,7 +10,7 @@ import scala.scalajs.js.URIUtils
 /** A utility for synchronizing application state with URL query parameters. This allows for shareable URLs and browser
   * history integration.
   */
-object FluxusQueryState {
+object QueryState {
   // Map of parameter signals
   private val paramSignals = collection.mutable.Map[String, Var[String]]()
 
@@ -194,19 +194,19 @@ object FluxusQueryState {
   *   Tuple of (current value, setter function, updater function)
   */
 def useQueryParam(key: String, defaultValue: String = ""): (String, String => Unit, (String => String) => Unit) = {
-  val signal = FluxusQueryState.param(key, defaultValue)
+  val signal = QueryState.param(key, defaultValue)
   val value  = useSignal(signal)
 
   // Direct setter function
   val setValue = (newValue: String) => {
-    FluxusQueryState.setParam(key, newValue)
+    QueryState.setParam(key, newValue)
   }
 
   // Functional updater that receives current value and returns new value
   val updateValue = (updateFn: String => String) => {
     val currentValue = signal.now()
     val newValue     = updateFn(currentValue)
-    FluxusQueryState.setParam(key, newValue)
+    QueryState.setParam(key, newValue)
   }
 
   (value, setValue, updateValue)
