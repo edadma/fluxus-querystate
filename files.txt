@@ -13,7 +13,6 @@ TestApp.scala
 build.sbt
 main.js
 package.json
-postcss.config.js
 tailwind.config.js
 vite.config.js
 ./project
