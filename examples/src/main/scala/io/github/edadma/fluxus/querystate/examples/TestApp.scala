@@ -89,7 +89,7 @@ def TestApp: FluxusNode = {
 }
 
 // Home tab content
-def HomeTab = () => {
+val HomeTab = () => {
   div(
     h2(cls := "text-xl font-bold mb-4", "Welcome to QueryState Demo"),
     p(
@@ -112,7 +112,7 @@ def HomeTab = () => {
 }
 
 // Products tab content
-def ProductsTab = () => {
+val ProductsTab = () => {
   // Use query parameters for filter and sort
   val (filter, setFilter, _) = useQueryParam("filter", "")
   val (sort, setSort, _)     = useQueryParam("sort", "newest")
@@ -200,7 +200,7 @@ def ProductsTab = () => {
 }
 
 // About tab content
-def AboutTab = () => {
+val AboutTab = () => {
   div(
     h2(cls := "text-xl font-bold mb-4", "About QueryState"),
     p(cls  := "mb-4", "QueryState is a lightweight library for Fluxus applications that:"),
