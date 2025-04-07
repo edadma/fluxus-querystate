@@ -27,54 +27,60 @@ def TestApp: FluxusNode = {
   div(
     cls := "container mx-auto p-4",
 
-    // Header
+    // Header - Changed to primary color from DaisyUI
     div(
-      cls := "bg-blue-600 text-white p-4 mb-4 rounded",
+      cls := "bg-primary text-primary-content p-4 mb-4 rounded shadow-lg",
       h1(cls := "text-2xl font-bold", "QueryState Demo"),
     ),
 
-    // Navigation tabs
+    // Navigation tabs - Using DaisyUI tabs
     div(
-      cls := "flex border-b mb-4",
+      cls := "tabs tabs-boxed mb-4",
       button(
-        cls     := s"px-4 py-2 ${if (activeTab == "home") "bg-blue-100 border-b-2 border-blue-600" else ""}",
+        cls     := s"tab ${if (activeTab == "home") "tab-active" else ""}",
         onClick := (() => setActiveTab("home")),
         "Home",
       ),
       button(
-        cls     := s"px-4 py-2 ${if (activeTab == "products") "bg-blue-100 border-b-2 border-blue-600" else ""}",
+        cls     := s"tab ${if (activeTab == "products") "tab-active" else ""}",
         onClick := (() => setActiveTab("products")),
         "Products",
       ),
       button(
-        cls     := s"px-4 py-2 ${if (activeTab == "about") "bg-blue-100 border-b-2 border-blue-600" else ""}",
+        cls     := s"tab ${if (activeTab == "about") "tab-active" else ""}",
         onClick := (() => setActiveTab("about")),
         "About",
       ),
     ),
 
-    // Current URL display
+    // Current URL display - Using DaisyUI card with neutral background
     div(
-      cls := "bg-gray-100 p-2 mb-4 rounded font-mono text-sm",
-      p("Current URL:"),
-      code(dom.window.location.href),
+      cls := "card bg-base-200 p-2 mb-4 shadow-sm",
+      div(
+        cls := "card-body p-3",
+        p("Current URL:"),
+        code(cls := "text-sm bg-base-300 p-1 rounded", dom.window.location.href),
+      ),
     ),
 
-    // Tab content
+    // Tab content - Using DaisyUI card
     div(
-      cls := "border p-4 rounded",
-      activeTab match {
-        case "products" => ProductsTab <> ()
-        case "about"    => AboutTab <> ()
-        case _          => HomeTab <> ()
-      },
+      cls := "card bg-base-100 shadow p-4 rounded",
+      div(
+        cls := "card-body",
+        activeTab match {
+          case "products" => ProductsTab <> ()
+          case "about"    => AboutTab <> ()
+          case _          => HomeTab <> ()
+        },
+      ),
     ),
 
-    // Reset button
+    // Reset button - Using DaisyUI button
     div(
       cls := "mt-4",
       button(
-        cls     := "bg-red-500 text-white px-4 py-2 rounded",
+        cls     := "btn btn-error",
         onClick := (() => QueryState.reset()),
         "Reset URL State",
       ),
@@ -82,7 +88,7 @@ def TestApp: FluxusNode = {
 
     // Footer
     div(
-      cls := "mt-8 pt-4 border-t text-center text-gray-500",
+      cls := "mt-8 pt-4 border-t text-center text-base-content opacity-70",
       p("Try navigating with the browser's back/forward buttons"),
     ),
   )
@@ -98,7 +104,7 @@ val HomeTab = () => {
       "Try clicking the tabs above and notice how the URL changes.",
     ),
     div(
-      cls := "mt-4 p-4 bg-yellow-100 rounded",
+      cls := "alert alert-info mt-4",
       h3(cls := "font-bold", "Features:"),
       ul(
         cls := "list-disc pl-5",
@@ -143,13 +149,13 @@ val ProductsTab = () => {
   div(
     h2(cls := "text-xl font-bold mb-4", "Products"),
 
-    // Filter and sort controls
+    // Filter and sort controls - Using DaisyUI form elements
     div(
-      cls := "flex flex-wrap gap-4 mb-4",
+      cls := "grid grid-cols-1 md:grid-cols-2 gap-4 mb-4",
       div(
-        label(cls := "block text-sm font-medium text-gray-700", "Filter by Category"),
+        label(cls := "label", span(cls := "label-text", "Filter by Category")),
         select(
-          cls   := "mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2",
+          cls   := "select select-bordered w-full",
           value := filter,
           onChange := ((e: dom.Event) =>
             setFilter(e.target.asInstanceOf[dom.html.Select].value)
@@ -161,9 +167,9 @@ val ProductsTab = () => {
         ),
       ),
       div(
-        label(cls := "block text-sm font-medium text-gray-700", "Sort by"),
+        label(cls := "label", span(cls := "label-text", "Sort by")),
         select(
-          cls   := "mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2",
+          cls   := "select select-bordered w-full",
           value := sort,
           onChange := ((e: dom.Event) =>
             setSort(e.target.asInstanceOf[dom.html.Select].value)
@@ -175,25 +181,30 @@ val ProductsTab = () => {
       ),
     ),
 
-    // Product list
+    // Product list - Using DaisyUI cards
     div(
       cls := "grid grid-cols-1 gap-4",
       sortedProducts.map { case (id, name, category, price) =>
         div(
           key := id,
-          cls := "border p-4 rounded shadow",
-          div(cls := "font-bold", name),
-          div(cls := "text-sm text-gray-500", s"Category: $category"),
-          div(cls := "mt-2 font-bold text-blue-600", f"$$${price}%.2f"),
+          cls := "card bg-base-200 shadow-sm",
+          div(
+            cls := "card-body p-4",
+            div(cls := "card-title", name),
+            div(cls := "text-sm opacity-70", s"Category: $category"),
+            div(cls := "mt-2 text-accent font-bold", f"$$${price}%.2f"),
+          ),
         )
       },
     ),
 
-    // Empty state
+    // Empty state - Using DaisyUI alert
     if (sortedProducts.isEmpty) {
       div(
-        cls := "text-center p-8 text-gray-500",
-        "No products match your filter criteria",
+        cls := "alert alert-warning my-4",
+        div(
+          "No products match your filter criteria",
+        ),
       )
     } else null,
   )
@@ -213,9 +224,9 @@ val AboutTab = () => {
       li("Provides a simple hook-based API for components"),
     ),
     div(
-      cls := "bg-gray-100 p-4 rounded",
-      h3(cls := "font-bold mb-2", "Usage example:"),
+      cls := "mockup-code bg-base-300 p-4 rounded",
       pre(
+        cls := "overflow-auto",
         code(
           "// Initialize with defaults\n" +
             "QueryState.init(\n" +
