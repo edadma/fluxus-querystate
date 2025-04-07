@@ -24,6 +24,9 @@ def TestApp: FluxusNode = {
   // Use query parameters in component
   val (activeTab, setActiveTab, _) = useQueryParam("tab", "home")
 
+  useQueryParam("filter", "")
+  useQueryParam("sort", "newest")
+
   div(
     cls := "container mx-auto p-4",
 
