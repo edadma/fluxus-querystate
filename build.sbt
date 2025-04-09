@@ -65,13 +65,11 @@ lazy val library = project
     ),
     jsEnv                                  := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
     scalaJSUseMainModuleInitializer        := true,
-    Test / scalaJSUseMainModuleInitializer := true,
-    Test / scalaJSUseTestModuleInitializer := false,
-//    Test / scalaJSUseMainModuleInitializer := false,
-//    Test / scalaJSUseTestModuleInitializer := true,
-    Test / parallelExecution := false,
-    publishMavenStyle        := true,
-    Test / publishArtifact   := false,
+    Test / scalaJSUseMainModuleInitializer := false,
+    Test / scalaJSUseTestModuleInitializer := true,
+    Test / parallelExecution               := false,
+    publishMavenStyle                      := true,
+    Test / publishArtifact                 := false,
   )
 
 lazy val examples = project
