@@ -17,11 +17,11 @@ Checklist for creating a new release
 
 ## Documentation Updates
 - [ ] Update CHANGELOG.md:
-    - [ ] Move "Unreleased" changes to new version section
-    - [ ] Add release date
-    - [ ] Add GitHub release link
-    - [ ] Verify all significant changes are documented
-    - [ ] Check formatting of changelog entries
+  - [ ] Move "Unreleased" changes to new version section
+  - [ ] Add release date
+  - [ ] Add GitHub release link
+  - [ ] Verify all significant changes are documented
+  - [ ] Check formatting of changelog entries
 - [ ] Update docs/_config.yml if needed
 - [ ] Create new release documentation in docs/releases/
 - [ ] Review/update API documentation if changed
@@ -32,18 +32,18 @@ Checklist for creating a new release
 - [ ] Run full test suite again: `sbt test`
 - [ ] Verify documentation site builds correctly
 - [ ] Test published artifacts locally:
-    - [ ] `sbt publishLocal`
-    - [ ] Create test project using local version
-    - [ ] Verify test project works with new version
+  - [ ] `sbt publishLocal`
+  - [ ] Create test project using local version
+  - [ ] Verify test project works with new version
 
 ## Publishing
 - [ ] Push all changes to GitHub
 - [ ] Wait for CI checks to pass
 - [ ] Publish to Sonatype:
-    - [ ] `sbt publishSigned`
-    - [ ] Login to Sonatype and verify artifacts
-    - [ ] `sbt sonatypeRelease`
-    - [ ] Verify artifacts appear on Maven Central
+  - [ ] `sbt publishSigned`
+  - [ ] Login to Sonatype and verify artifacts
+  - [ ] `sbt sonatypeRelease`
+  - [ ] Verify artifacts appear on Maven Central
 - [ ] Create GitHub release with changelog content
 
 ## Post-release
@@ -64,5 +64,7 @@ Checklist for creating a new release
   ### Removed
   
   ### Deprecated
+
+  ### Upgraded
   ```
 - [ ] Push post-release changes
