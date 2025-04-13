@@ -1,6 +1,6 @@
 # fluxus-querystate
 
-[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/license/isc-license-txt/)
+![GitHub](https://img.shields.io/github/license/edadma/fluxus-daisyui)
 ![Scala Version](https://img.shields.io/badge/scala-3.6.4-blue.svg)
 ![ScalaJS Version](https://img.shields.io/badge/scalajs-1.18.2-blue.svg)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.edadma/fluxus-querystate_sjs1_3.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=g%3Aio.github.edadma+a%3Afluxus-querystate_*)
