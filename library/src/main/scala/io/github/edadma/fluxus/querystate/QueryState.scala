@@ -3,220 +3,9 @@ package io.github.edadma.fluxus.querystate
 import io.github.edadma.fluxus._
 import org.scalajs.dom
 import org.scalajs.dom.window
-import com.raquo.airstream.state.Var
-import com.raquo.airstream.core.Transaction
 import scala.scalajs.js.URIUtils
 
-/** A utility for synchronizing application state with URL query parameters. This allows for shareable URLs and browser
-  * history integration.
-  */
-object QueryState {
-  // Map of parameter signals
-  private val paramSignals = collection.mutable.Map[String, Var[String]]()
-
-  // Config options
-  private var useHashMode = false
-  private var initialized = false
-
-  // Expose initialization state
-  def isInitialized: Boolean = initialized
-
-  /** Initialize the query state manager.
-    * @param defaults
-    *   Default values for parameters
-    * @param useHash
-    *   Whether to use hash-based URL parameters (#param=value)
-    */
-  def init(defaults: Map[String, String] = Map(), useHash: Boolean = false): Unit = {
-    useHashMode = useHash
-
-    // Read initial values from URL
-    val urlParams = parseQueryParams()
-
-    // Initialize signals with URL values or defaults
-    Transaction { _ =>
-      defaults.foreach { case (key, defaultValue) =>
-        val initialValue = urlParams.getOrElse(key, defaultValue)
-        paramSignals.getOrElseUpdate(key, Var(initialValue)).set(initialValue)
-      }
-    }
-
-    // Set up browser navigation event listener
-    setupHistoryListener()
-    initialized = true
-  }
-
-  /** Get or create a parameter signal with an optional default value.
-    * @param key
-    *   Parameter name
-    * @param defaultValue
-    *   Default value if parameter doesn't exist
-    * @return
-    *   Signal for the parameter
-    */
-  def param(key: String, defaultValue: String = ""): Var[String] = {
-    if (!initialized) {
-      init()
-    }
-    paramSignals.getOrElseUpdate(key, Var(defaultValue))
-  }
-
-  /** Update a single parameter value.
-    * @param key
-    *   Parameter name
-    * @param value
-    *   New parameter value
-    */
-  def setParam(key: String, value: String): Unit = {
-    if (!initialized) {
-      init()
-    }
-
-    Transaction { _ =>
-      paramSignals.getOrElseUpdate(key, Var(value)).set(value)
-    }
-    updateQueryParams()
-  }
-
-  /** Update multiple parameters at once.
-    * @param params
-    *   Map of parameter names to values
-    */
-  def updateParams(params: Map[String, String]): Unit = {
-    if (!initialized) {
-      init()
-    }
-
-    Transaction { _ =>
-      params.foreach { case (key, value) =>
-        paramSignals.getOrElseUpdate(key, Var(value)).set(value)
-      }
-    }
-    updateQueryParams()
-  }
-
-  /** Reset all parameters to their defaults or empty strings.
-    * @param defaults
-    *   Map of default values to reset to
-    */
-  def reset(defaults: Map[String, String] = Map()): Unit = {
-    if (!initialized) {
-      init(defaults)
-      return
-    }
-
-    Transaction { _ =>
-      paramSignals.keys.foreach { key =>
-        paramSignals(key).set(defaults.getOrElse(key, ""))
-      }
-    }
-    updateQueryParams()
-  }
-
-  /** Get current parameters as a Map.
-    * @return
-    *   Map of current parameter values
-    */
-  def currentParams: Map[String, String] = {
-    if (!initialized) {
-      init()
-    }
-
-    paramSignals.map { case (key, signal) => key -> signal.now() }.toMap
-  }
-
-  /** Generate a URL with the given parameters.
-    * @param params
-    *   Map of parameter names to values
-    * @return
-    *   URL string with the parameters
-    */
-  def urlFor(params: Map[String, String]): String = {
-    val queryString = params.filter(_._2.nonEmpty).map { case (key, value) =>
-      s"$key=${URIUtils.encodeURIComponent(value)}"
-    }.mkString("&")
-
-    if (useHashMode) {
-      if (queryString.isEmpty) window.location.pathname else s"${window.location.pathname}#$queryString"
-    } else {
-      if (queryString.isEmpty) window.location.pathname else s"${window.location.pathname}?$queryString"
-    }
-  }
-
-  // Private methods for URL handling
-  private def parseQueryParams(): Map[String, String] = {
-    val queryString = if (useHashMode) {
-      window.location.hash.stripPrefix("#")
-    } else {
-      window.location.search.stripPrefix("?")
-    }
-
-    if (queryString.isEmpty) Map.empty
-    else {
-      queryString.split("&").map { param =>
-        val parts = param.split("=")
-        if (parts.length > 1) parts(0) -> URIUtils.decodeURIComponent(parts(1))
-        else parts(0)                  -> ""
-      }.toMap
-    }
-  }
-
-  private def updateQueryParams(): Unit = {
-    val params = paramSignals.map { case (key, signal) => key -> signal.now() }.toMap.filter(_._2.nonEmpty)
-    val url    = urlFor(params)
-
-    // Update browser URL
-    window.history.pushState(null, "", url)
-  }
-
-  private def setupHistoryListener(): Unit = {
-    // Handle browser navigation events (back/forward buttons)
-    val handler = (_: dom.Event) => {
-      val params = parseQueryParams()
-
-      // Update signals with new URL values, but don't trigger another URL update
-      Transaction { _ =>
-        paramSignals.foreach { case (key, signal) =>
-          signal.set(params.getOrElse(key, signal.now()))
-        }
-      }
-    }
-
-    window.addEventListener("popstate", handler)
-  }
-}
-
-/** Hook to use a query parameter in a component. Returns a tuple of (current value, setter function, updater function)
-  * similar to Fluxus's useState hook.
-  *
-  * @param key
-  *   Parameter name
-  * @param defaultValue
-  *   Default value if parameter doesn't exist
-  * @return
-  *   Tuple of (current value, setter function, updater function)
-  */
-def useQueryParam(key: String, defaultValue: String = ""): (String, String => Unit, (String => String) => Unit) = {
-  val signal = QueryState.param(key, defaultValue)
-  val value  = useSignal(signal)
-
-  // Direct setter function
-  val setValue = (newValue: String) => {
-    QueryState.setParam(key, newValue)
-  }
-
-  // Functional updater that receives current value and returns new value
-  val updateValue = (updateFn: String => String) => {
-    val currentValue = signal.now()
-    val newValue     = updateFn(currentValue)
-    QueryState.setParam(key, newValue)
-  }
-
-  (value, setValue, updateValue)
-}
-
-/** Hook to use multiple query parameters in a component. Returns a sequence of tuples, each containing (current value,
-  * setter function, updater function) for each parameter.
+/** A hook to use URL query parameters as component state.
   *
   * @param params
   *   Sequence of (key, defaultValue) pairs. Use null for parameters without a default.
@@ -225,34 +14,135 @@ def useQueryParam(key: String, defaultValue: String = ""): (String, String => Un
   * @return
   *   Sequence of (current value, setter function, updater function) tuples in the same order as input params
   */
+def useQueryState(
+    params: Seq[(String, String)],
+    useHash: Boolean = false,
+): Seq[(String, String => Unit, (String => String) => Unit)] = {
+  // This will force component re-renders when URL changes
+  val (_, _, setForceUpdate) = useState(0)
+
+  // Get the current URL parameters
+  val urlParams = parseQueryParams(useHash)
+
+  // Apply defaults for missing parameters
+  val currentValues = params.map { case (key, defaultValue) =>
+    val effectiveDefault = if (defaultValue == null) "" else defaultValue
+    key -> urlParams.getOrElse(key, effectiveDefault)
+  }.toMap
+
+  // Set up listener for URL changes (browser navigation)
+  useEffect(
+    () => {
+      // Only update URL if defaults need to be applied
+      val needsUrlUpdate = params.exists { case (key, defaultValue) =>
+        defaultValue != null &&
+        defaultValue.nonEmpty &&
+        !urlParams.contains(key)
+      }
+
+      if (needsUrlUpdate) {
+        updateQueryParams(currentValues, useHash)
+      }
+
+      // Set up browser navigation event listener
+      val handler = (_: dom.Event) => {
+        // Force component to re-render with new URL params
+        setForceUpdate(_ => System.currentTimeMillis().toInt)
+      }
+
+      window.addEventListener("popstate", handler)
+
+      // Clean up listener on unmount
+      () => window.removeEventListener("popstate", handler)
+    },
+    Seq(), // Only run on mount/unmount
+  )
+
+  // Create parameter tuples for each param
+  params.map { case (key, _) =>
+    val currentValue = currentValues.getOrElse(key, "")
+
+    // Setter function - updates the URL directly
+    val setValue = (newValue: String) => {
+      // Get current URL params
+      val current = parseQueryParams(useHash)
+
+      // Update with new value
+      val updated = if (newValue.isEmpty) {
+        current - key
+      } else {
+        current + (key -> newValue)
+      }
+
+      // Update URL
+      updateQueryParams(updated, useHash)
+
+      // Force component to re-render with new URL params
+      setForceUpdate(_ => System.currentTimeMillis().toInt)
+    }
+
+    // Updater function - updates based on current value
+    val updateValue = (updateFn: String => String) => {
+      val current           = parseQueryParams(useHash)
+      val currentParamValue = current.getOrElse(key, "")
+      val newValue          = updateFn(currentParamValue)
+
+      // Update with new value
+      val updated = if (newValue.isEmpty) {
+        current - key
+      } else {
+        current + (key -> newValue)
+      }
+
+      // Update URL
+      updateQueryParams(updated, useHash)
+
+      // Force component to re-render with new URL params
+      setForceUpdate(_ => System.currentTimeMillis().toInt)
+    }
+
+    (currentValue, setValue, updateValue)
+  }
+}
+
+// For backward compatibility
 def useQueryParams(
     params: Seq[(String, String)],
     useHash: Boolean = false,
 ): Seq[(String, String => Unit, (String => String) => Unit)] = {
-  // Initialize QueryState if not already initialized
-  if (!QueryState.isInitialized) {
-    val defaults = params.filter(_._2 != null).toMap
-    QueryState.init(defaults, useHash)
+  useQueryState(params, useHash)
+}
+
+// Helper functions
+private def parseQueryParams(useHash: Boolean): Map[String, String] = {
+  val queryString = if (useHash) {
+    window.location.hash.stripPrefix("#")
+  } else {
+    window.location.search.stripPrefix("?")
   }
 
-  // Create hooks for each parameter
-  params.map { case (key, defaultValue) =>
-    val effectiveDefault = if (defaultValue == null) "" else defaultValue
-    val signal           = QueryState.param(key, effectiveDefault)
-    val value            = useSignal(signal)
-
-    // Direct setter function
-    val setValue = (newValue: String) => {
-      QueryState.setParam(key, newValue)
-    }
-
-    // Functional updater that receives current value and returns new value
-    val updateValue = (updateFn: String => String) => {
-      val currentValue = signal.now()
-      val newValue     = updateFn(currentValue)
-      QueryState.setParam(key, newValue)
-    }
-
-    (value, setValue, updateValue)
+  if (queryString.isEmpty) Map.empty
+  else {
+    queryString.split("&").map { param =>
+      val parts = param.split("=")
+      if (parts.length > 1) parts(0) -> URIUtils.decodeURIComponent(parts(1))
+      else parts(0)                  -> ""
+    }.toMap
   }
+}
+
+private def updateQueryParams(params: Map[String, String], useHash: Boolean): Unit = {
+  val filteredParams = params.filter(_._2.nonEmpty)
+  val queryString = filteredParams.map { case (key, value) =>
+    s"$key=${URIUtils.encodeURIComponent(value)}"
+  }.mkString("&")
+
+  val url = if (useHash) {
+    if (queryString.isEmpty) window.location.pathname else s"${window.location.pathname}#$queryString"
+  } else {
+    if (queryString.isEmpty) window.location.pathname else s"${window.location.pathname}?$queryString"
+  }
+
+  // Update browser URL
+  window.history.pushState(null, "", url)
 }
