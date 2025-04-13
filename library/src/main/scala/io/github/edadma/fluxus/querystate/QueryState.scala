@@ -18,6 +18,9 @@ object QueryState {
   private var useHashMode = false
   private var initialized = false
 
+  // Expose initialization state
+  def isInitialized: Boolean = initialized
+
   /** Initialize the query state manager.
     * @param defaults
     *   Default values for parameters
@@ -210,4 +213,46 @@ def useQueryParam(key: String, defaultValue: String = ""): (String, String => Un
   }
 
   (value, setValue, updateValue)
+}
+
+/** Hook to use multiple query parameters in a component. Returns a sequence of tuples, each containing (current value,
+  * setter function, updater function) for each parameter.
+  *
+  * @param params
+  *   Sequence of (key, defaultValue) pairs. Use null for parameters without a default.
+  * @param useHash
+  *   Whether to use hash-based URL parameters
+  * @return
+  *   Sequence of (current value, setter function, updater function) tuples in the same order as input params
+  */
+def useQueryParams(
+    params: Seq[(String, String)],
+    useHash: Boolean = false,
+): Seq[(String, String => Unit, (String => String) => Unit)] = {
+  // Initialize QueryState if not already initialized
+  if (!QueryState.isInitialized) {
+    val defaults = params.filter(_._2 != null).toMap
+    QueryState.init(defaults, useHash)
+  }
+
+  // Create hooks for each parameter
+  params.map { case (key, defaultValue) =>
+    val effectiveDefault = if (defaultValue == null) "" else defaultValue
+    val signal           = QueryState.param(key, effectiveDefault)
+    val value            = useSignal(signal)
+
+    // Direct setter function
+    val setValue = (newValue: String) => {
+      QueryState.setParam(key, newValue)
+    }
+
+    // Functional updater that receives current value and returns new value
+    val updateValue = (updateFn: String => String) => {
+      val currentValue = signal.now()
+      val newValue     = updateFn(currentValue)
+      QueryState.setParam(key, newValue)
+    }
+
+    (value, setValue, updateValue)
+  }
 }
