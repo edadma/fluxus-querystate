@@ -1,7 +1,7 @@
 # fluxus-querystate
 
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/license/isc-license-txt/)
-[![Scala.js](https://www.scala-js.org/assets/badges/scalajs-1.18.2.svg)](https://www.scala-js.org)
+<a href="https://www.scala-js.org"><img src="https://img.shields.io/badge/scala.js-1.18.2-blue.svg" alt="Scala.js: 1.18.2"></a>
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.edadma/fluxus-querystate_sjs1_3.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=g%3Aio.github.edadma+a%3Afluxus-querystate_*)
 
 A lightweight library for synchronizing [Fluxus](https://github.com/edadma/fluxus) application state with URL query parameters, enabling shareable URLs and browser history integration.
