@@ -19,7 +19,7 @@ A lightweight library for synchronizing [Fluxus](https://github.com/edadma/fluxu
 Add the dependency to your `build.sbt`:
 
 ```scala
-libraryDependencies += "io.github.edadma" %%% "fluxus-querystate" % "0.0.1"
+libraryDependencies += "io.github.edadma" %%% "fluxus-querystate" % "0.0.2"
 ```
 
 ## Getting Started
@@ -28,23 +28,18 @@ libraryDependencies += "io.github.edadma" %%% "fluxus-querystate" % "0.0.1"
 
 ```scala
 import io.github.edadma.fluxus._
-import io.github.edadma.fluxus.querystate.QueryState
-import io.github.edadma.fluxus.querystate.useQueryParam
+import io.github.edadma.fluxus.querystate.useQueryState
 
-// Initialize with default values
-QueryState.init(
-  defaults = Map(
-    "tab" -> "home",
-    "filter" -> "",
-    "sort" -> "newest",
-  ),
-  useHash = false  // Set to true to use hash-based URLs
-)
-
-// In your component
-val YourComponent: (props: YourComponentProps) => {
+val YourComponent = (props: YourComponentProps) => {
   // Use query parameters in component
-  val (activeTab, setActiveTab, _) = useQueryParam("tab", "home")
+  val Seq(
+    (activeTab, setActiveTab, _)
+  ) = useQueryState(
+    Seq(
+      "tab" -> "home" // Default value
+    ),
+    useHash = false // Set to true to use hash-based URLs
+  )
   
   div(
     // Navigation tabs
@@ -74,49 +69,29 @@ val YourComponent: (props: YourComponentProps) => {
 
 ### API Reference
 
-#### Initialization
-
-```scala
-// Initialize with default values
-QueryState.init(
-  defaults: Map[String, String] = Map(),  // Default parameter values
-  useHash: Boolean = false                // Whether to use hash-based URLs
-)
-```
-
 #### Hooks
 
 ```scala
-// Use a query parameter in a component
-val (value, setValue, updateValue) = useQueryParam(key: String, defaultValue: String = "")
+// Use query parameters in a component - returns a sequence of (value, setValue, updateValue) tuples
+val Seq(
+  (value1, setValue1, updateValue1),
+  (value2, setValue2, updateValue2),
+  // ...more parameters
+) = useQueryState(
+  Seq(
+    "key1" -> "defaultValue1", 
+    "key2" -> "defaultValue2",
+    // Use null for parameters without default values
+    "key3" -> null
+  ),
+  useHash = false // Whether to use hash-based URLs
+)
 ```
 
-Returns a tuple with:
+Each tuple contains:
 - `value`: Current parameter value
-- `setValue`: Function to set the parameter directly
-- `updateValue`: Function to update the parameter based on current value
-
-#### Methods
-
-```scala
-// Get or create a parameter signal
-QueryState.param(key: String, defaultValue: String = ""): Var[String]
-
-// Update a single parameter
-QueryState.setParam(key: String, value: String): Unit
-
-// Update multiple parameters
-QueryState.updateParams(params: Map[String, String]): Unit
-
-// Reset all parameters to defaults or empty
-QueryState.reset(defaults: Map[String, String] = Map()): Unit
-
-// Get current parameters as a Map
-QueryState.currentParams: Map[String, String]
-
-// Generate a URL with given parameters
-QueryState.urlFor(params: Map[String, String]): String
-```
+- `setValue`: Function to set the parameter directly - `setValue(newValue)`
+- `updateValue`: Function to update the parameter based on current value - `updateValue(currentValue => newValue)`
 
 ## Examples
 
@@ -125,8 +100,15 @@ QueryState.urlFor(params: Map[String, String]): String
 ```scala
 val ProductsTab = () => {
   // Use query parameters for filter and sort
-  val (filter, setFilter, _) = useQueryParam("filter", "")
-  val (sort, setSort, _) = useQueryParam("sort", "newest")
+  val Seq(
+    (filter, setFilter, _),
+    (sort, setSort, _)
+  ) = useQueryState(
+    Seq(
+      "filter" -> null,  // No default filter (show all)
+      "sort" -> "newest"  // Default sort is "newest"
+    )
+  )
   
   div(
     // Filter control
@@ -134,7 +116,9 @@ val ProductsTab = () => {
       label("Filter:"),
       select(
         value := filter,
-        onChange := ((e) => setFilter(e.target.value)),
+        onChange := ((e: dom.Event) => 
+          setFilter(e.target.asInstanceOf[dom.html.Select].value)
+        ),
         option(value := "", "All"),
         option(value := "category1", "Category 1"),
         option(value := "category2", "Category 2")
@@ -146,10 +130,101 @@ val ProductsTab = () => {
       label("Sort by:"),
       select(
         value := sort,
-        onChange := ((e) => setSort(e.target.value)),
+        onChange := ((e: dom.Event) => 
+          setSort(e.target.asInstanceOf[dom.html.Select].value)
+        ),
         option(value := "newest", "Newest"),
         option(value := "oldest", "Oldest"),
         option(value := "price", "Price")
+      )
+    )
+  )
+}
+```
+
+### Complete E-commerce Example
+
+The library includes a comprehensive demo in the examples project showing how to build a complete product listing page with:
+
+- View toggle (grid/list)
+- Category filtering
+- Sorting options
+- Pagination
+- Items per page selector
+
+Here's a simplified version of the key parts:
+
+```scala
+val ProductsPage = () => {
+  // Use all query parameters in a single hook call
+  val Seq(
+    (view, setView, _),
+    (category, setCategory, _),
+    (sort, setSort, _),
+    (page, setPage, updatePage),
+    (perPage, setPerPage, _),
+  ) = useQueryState(
+    Seq(
+      "view"     -> "grid",     // Default to grid view
+      "category" -> null,       // No default category (show all)
+      "sort"     -> "name-asc", // Default sort
+      "page"     -> "1",        // Default to first page
+      "perPage"  -> "6",        // Default items per page
+    )
+  )
+
+  // Parse numeric parameters
+  val currentPage = page.toIntOption.getOrElse(1)
+  val itemsPerPage = perPage.toIntOption.getOrElse(6)
+
+  // Rest of component logic...
+  
+  div(
+    // View toggle
+    div(
+      button(
+        cls := s"btn ${if (view == "grid") "btn-active" else ""}",
+        onClick := (() => setView("grid")),
+        "Grid"
+      ),
+      button(
+        cls := s"btn ${if (view == "list") "btn-active" else ""}",
+        onClick := (() => setView("list")),
+        "List"
+      )
+    ),
+    
+    // Category selector
+    select(
+      value := (if (category == null) "" else category),
+      onChange := ((e: dom.Event) => 
+        setCategory(e.target.asInstanceOf[dom.html.Select].value)
+      ),
+      option(value := "", "All Categories"),
+      // Category options...
+    ),
+    
+    // Sort selector
+    select(
+      value := sort,
+      onChange := ((e: dom.Event) => 
+        setSort(e.target.asInstanceOf[dom.html.Select].value)
+      ),
+      // Sort options...
+    ),
+    
+    // Pagination
+    div(
+      button(
+        disabled := currentPage <= 1,
+        onClick := (() => setPage((currentPage - 1).toString)),
+        "Previous"
+      ),
+      // Page numbers...
+      button(
+        disabled := currentPage >= totalPages,
+        onClick := (() => setPage((currentPage + 1).toString)),
+        "Next"
       )
     )
   )
@@ -161,14 +236,17 @@ val ProductsTab = () => {
 ```scala
 val FormWizard = () => {
   // Use query parameter for current step
-  val (step, setStep, _) = useQueryParam("step", "1")
-  val stepNum = step.toInt
+  val Seq((step, setStep, _)) = useQueryState(
+    Seq("step" -> "1")
+  )
+  
+  val stepNum = step.toIntOption.getOrElse(1)
   
   div(
     // Form steps
     div(
       cls := "steps",
-      renderStepIndicators(stepNum)
+      // Step indicators...
     ),
     
     // Current step content
@@ -201,6 +279,14 @@ https://yourapp.com/path?tab=home&filter=category1&sort=newest
 ```
 https://yourapp.com/path#tab=home&filter=category1&sort=newest
 ```
+
+## Benefits
+
+- **Shareable URLs**: Users can share their exact application state through URLs
+- **Browser Navigation**: Support for browser back/forward buttons without losing application state
+- **Bookmarkable States**: Users can bookmark specific application states
+- **Server-Side Rendering Compatibility**: Works well with server-side rendering approaches
+- **SEO Benefits**: Search engines can index different application states when using standard query parameters
 
 ## Browser Support
 
