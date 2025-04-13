@@ -6,7 +6,7 @@ QueryState.scala
 
 # example apps
 ./examples/src/main/scala/io/github/edadma/fluxus/querystate/examples
-TestApp.scala
+DemoApp.scala
 
 # build files
 ./
