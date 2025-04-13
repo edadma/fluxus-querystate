@@ -113,14 +113,6 @@ def useQueryState(
   }
 }
 
-// For backward compatibility
-def useQueryParams(
-    params: Seq[(String, String)],
-    useHash: Boolean = false,
-): Seq[(String, String => Unit, (String => String) => Unit)] = {
-  useQueryState(params, useHash)
-}
-
 // Helper functions
 private def parseQueryParams(useHash: Boolean): Map[String, String] = {
   val queryString = if (useHash) {
