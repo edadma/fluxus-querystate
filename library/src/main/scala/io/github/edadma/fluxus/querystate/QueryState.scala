@@ -24,16 +24,22 @@ def useQueryState(
   // Get the current URL parameters
   val urlParams = parseQueryParams(useHash)
 
-  // Apply defaults for missing parameters
+  // Apply defaults for missing parameters, preserving URL values exactly as they are
   val currentValues = params.map { case (key, defaultValue) =>
-    val effectiveDefault = if (defaultValue == null) "" else defaultValue
-    key -> urlParams.getOrElse(key, effectiveDefault)
+    // If parameter exists in URL, use it exactly as is
+    if (urlParams.contains(key)) {
+      key -> urlParams(key)
+    } else {
+      // If not in URL, use default (empty for null)
+      val effectiveDefault = if (defaultValue == null) "" else defaultValue
+      key -> effectiveDefault
+    }
   }.toMap
 
   // Set up listener for URL changes (browser navigation)
   useEffect(
     () => {
-      // Only update URL if defaults need to be applied
+      // Only update URL if non-null defaults need to be applied
       val needsUrlUpdate = params.exists { case (key, defaultValue) =>
         defaultValue != null &&
         defaultValue.nonEmpty &&
@@ -41,7 +47,9 @@ def useQueryState(
       }
 
       if (needsUrlUpdate) {
-        updateQueryParams(currentValues, useHash)
+        // Only include non-empty values in URL
+        val urlValues = currentValues.filter(_._2.nonEmpty)
+        updateQueryParams(urlValues, useHash)
       }
 
       // Set up browser navigation event listener
