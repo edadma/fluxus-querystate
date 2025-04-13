@@ -295,4 +295,4 @@ Works with all modern browsers that support the History API.
 
 ## License
 
-ISC License
+MIT License
