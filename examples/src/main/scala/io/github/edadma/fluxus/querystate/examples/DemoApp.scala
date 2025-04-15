@@ -1,7 +1,7 @@
 package io.github.edadma.fluxus.querystate.examples
 
 import io.github.edadma.fluxus._
-import io.github.edadma.fluxus.querystate.useQueryParams
+import io.github.edadma.fluxus.querystate.useQueryState
 import org.scalajs.dom
 
 @main def run(): Unit = {
@@ -34,7 +34,7 @@ def DemoApp: FluxusNode = {
     (sort, setSort, _),
     (page, setPage, updatePage),
     (perPage, setPerPage, _),
-  ) = useQueryParams(
+  ) = useQueryState(
     Seq(
       "view"     -> "grid",     // Default to grid view
       "category" -> null,       // No default category (show all)
